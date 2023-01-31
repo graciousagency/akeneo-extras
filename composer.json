@@ -2,7 +2,7 @@
   "name": "gracious/akeneo-extras",
   "description": "Proprietary extras for Akeneo system",
   "minimum-stability": "stable",
-  "license": "proprietary",
+  "license": "MIT",
   "authors": [
     {
       "name": "Peter Glický",
