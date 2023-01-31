@@ -1,0 +1,50 @@
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: false      # Automatically injects dependencies in your services.
+    autoconfigure: false # Automatically registers your services as commands, event subscribers, etc.
+
+  Gracious\AkeneoExtras\Command\PimMassDeleteAttributesCommand:
+    arguments:
+      - '@pim_catalog.repository.attribute'
+      - '@pim_catalog.repository.channel'
+      - '@akeneo.pim.structure.query.attribute_is_an_family_variant_axis'
+      - '@pim_catalog.saver.attribute'
+      - '@pim_catalog.remover.attribute'
+    tags:
+      - { name: 'console.command' }
+
+  Gracious\AkeneoExtras\Command\PimMassDeleteProductsCommand:
+    arguments:
+      - '@pim_catalog.repository.product'
+      - '@pim_catalog.remover.product'
+      - '@akeneo_elasticsearch.client.product_and_product_model'
+    tags:
+      - { name: 'console.command' }
+
+  Gracious\AkeneoExtras\Command\PimMassDeleteProductModelsCommand:
+    arguments:
+      - '@pim_catalog.repository.product_model'
+      - '@Akeneo\Pim\Enrichment\Component\Product\Command\ProductModel\RemoveProductModelHandler'
+      - '@akeneo_elasticsearch.client.product_and_product_model'
+      - '@validator'
+    tags:
+      - { name: 'console.command' }
+
+  Gracious\AkeneoExtras\Command\PimMassDeleteFamiliesCommand:
+    arguments:
+      - '@pim_catalog.repository.family'
+      - '@pim_catalog.remover.family'
+    tags:
+      - { name: 'console.command' }
+
+  Gracious\AkeneoExtras\Command\PimMassDeleteFamilyVariantsCommand:
+    arguments:
+      - '@pim_catalog.repository.family_variant'
+      - '@pim_catalog.remover.family_variant'
+    tags:
+      - { name: 'console.command' }
+
+  Gracious\AkeneoExtras\Command\PimMassDeleteSystemFlushCommand:
+    tags:
+      - { name: 'console.command' }

@@ -1,0 +1,22 @@
+{
+  "name": "gracious/akeneo-extras",
+  "description": "Proprietary extras for Akeneo system",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Peter Glický",
+      "email": "p.grlicky@gracious.nl"
+    }
+  ],
+  "type": "symfony-bundle",
+  "autoload": {
+    "psr-4": {
+      "Gracious\\AkeneoExtras\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.0",
+    "akeneo/pim-community-dev": "^6.0.0"
+  }
+}
