@@ -35,9 +35,7 @@ class PimMassDeleteSystemFlushCommand extends Command
             'pim:mass-delete:product-models' => [],
             'pim:mass-delete:family-variants' => [],
             'pim:mass-delete:families' => [],
-            'pim:mass-delete:attributes' => [
-                '-f'
-            ],
+            'pim:mass-delete:attributes' => [],
         ];
 
         foreach ($commands as $command => $args) {
