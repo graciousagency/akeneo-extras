@@ -102,7 +102,7 @@ class PimMassDeleteAttributesCommand extends Command
             }
             else {
                 $io->error(
-                    sprintf("Cannot remove attribute '%s' because it's an identifier!", $attribute->getCode())
+                    sprintf("Cannot remove attribute '%s' because it's an identifier! (for removal of this identifier run command 'pim:mass-delete:attributes -f')", $attribute->getCode())
                 );
                 return;
             }
