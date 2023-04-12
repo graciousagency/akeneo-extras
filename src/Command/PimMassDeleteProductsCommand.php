@@ -44,11 +44,7 @@ class PimMassDeleteProductsCommand extends Command
         }
 
         try {
-            $products = $this->repository->findAll();
-
-            foreach ($products as $product) {
-                $this->remover->remove($product);
-            }
+            $this->removeProducts();
             $this->productAndProductModelClient->refreshIndex();
         } catch (ElasticsearchException $e) {
             $io->error($e->getMessage());
@@ -60,5 +56,18 @@ class PimMassDeleteProductsCommand extends Command
 
         $io->success('All done!');
         return Command::SUCCESS;
+    }
+
+    private function removeProducts(): void
+    {
+        do {
+            $products = $this->repository->findBy([], ['id' => 'ASC'], 100);
+            if (count($products) === 0) {
+                break;
+            }
+            foreach ($products as $product) {
+                $this->remover->remove($product);
+            }
+        } while(count($products) > 0);
     }
 }

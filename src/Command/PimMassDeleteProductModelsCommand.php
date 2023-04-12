@@ -48,12 +48,7 @@ class PimMassDeleteProductModelsCommand extends Command
         }
 
         try {
-            $productModels = $this->repository->findAll();
-
-            foreach ($productModels as $productModel) {
-                $this->removeProductModel($io, $productModel);
-            }
-
+            $this->removeProductModels($io);
             $this->productAndProductModelClient->refreshIndex();
         } catch (ElasticsearchException $e) {
             $io->error($e->getMessage());
@@ -86,5 +81,18 @@ class PimMassDeleteProductModelsCommand extends Command
         }
 
         ($this->removeProductModelHandler)($command);
+    }
+
+    private function removeProductModels(SymfonyStyle $io): void
+    {
+        do {
+            $productModels = $this->repository->findBy([], ['id' => 'ASC'], 100);
+            if (count($productModels) === 0) {
+                break;
+            }
+            foreach ($productModels as $productModel) {
+                $this->removeProductModel($io, $productModel);
+            }
+        } while(count($productModels) > 0);
     }
 }
