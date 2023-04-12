@@ -2,10 +2,10 @@
 namespace Gracious\AkeneoExtras\Command;
 
 use Akeneo\Pim\Enrichment\Component\Product\Command\ProductModel\RemoveProductModelCommand;
-use Akeneo\Pim\Enrichment\Component\Product\Command\ProductModel\RemoveProductModelHandler;
 use Akeneo\Pim\Enrichment\Component\Product\Model\ProductModelInterface;
 use Akeneo\Pim\Enrichment\Component\Product\Repository\ProductModelRepositoryInterface;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\Client;
+use Akeneo\Tool\Component\StorageUtils\Remover\BulkRemoverInterface;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -23,7 +23,7 @@ class PimMassDeleteProductModelsCommand extends Command
 {
     public function __construct(
         private ProductModelRepositoryInterface $repository,
-        private RemoveProductModelHandler       $removeProductModelHandler,
+        private BulkRemoverInterface       $remover,
         private Client                          $productAndProductModelClient,
         private ValidatorInterface              $validator,
                                                 $name = null
@@ -48,7 +48,7 @@ class PimMassDeleteProductModelsCommand extends Command
         }
 
         try {
-            $this->removeProductModels($io);
+            $this->removeProductModels();
             $this->productAndProductModelClient->refreshIndex();
         } catch (ElasticsearchException $e) {
             $io->error($e->getMessage());
@@ -62,37 +62,14 @@ class PimMassDeleteProductModelsCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function removeProductModel(SymfonyStyle $io, ProductModelInterface $productModel): void
-    {
-        $command = new RemoveProductModelCommand($productModel->getCode());
-        $violations = $this->validator->validate($command);
-
-        if (count($violations) > 0) {
-            foreach ($violations as $violation) {
-                $io->error(
-                    sprintf(
-                        "Cannot remove product model '%s' due to: %s",
-                        $productModel->getCode(),
-                        $violation->getMessage()
-                    )
-                );
-            }
-            return;
-        }
-
-        ($this->removeProductModelHandler)($command);
-    }
-
-    private function removeProductModels(SymfonyStyle $io): void
+    private function removeProductModels(): void
     {
         do {
-            $productModels = $this->repository->findBy([], ['id' => 'ASC'], 100);
+            $productModels = $this->repository->findBy([], ['id' => 'ASC'], 1000);
             if (count($productModels) === 0) {
                 break;
             }
-            foreach ($productModels as $productModel) {
-                $this->removeProductModel($io, $productModel);
-            }
+            $this->remover->removeAll($productModels);
         } while(count($productModels) > 0);
     }
 }

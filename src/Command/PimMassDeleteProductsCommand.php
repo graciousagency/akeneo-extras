@@ -3,7 +3,7 @@ namespace Gracious\AkeneoExtras\Command;
 
 use Akeneo\Pim\Enrichment\Component\Product\Repository\ProductRepositoryInterface;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\Client;
-use Akeneo\Tool\Component\StorageUtils\Remover\RemoverInterface;
+use Akeneo\Tool\Component\StorageUtils\Remover\BulkRemoverInterface;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +20,7 @@ class PimMassDeleteProductsCommand extends Command
 {
     public function __construct(
         private ProductRepositoryInterface $repository,
-        private RemoverInterface           $remover,
+        private BulkRemoverInterface       $remover,
         private Client                     $productAndProductModelClient,
                                            $name = null
     ) {
@@ -61,13 +61,11 @@ class PimMassDeleteProductsCommand extends Command
     private function removeProducts(): void
     {
         do {
-            $products = $this->repository->findBy([], ['id' => 'ASC'], 100);
+            $products = $this->repository->findBy([], ['id' => 'ASC'], 1000);
             if (count($products) === 0) {
                 break;
             }
-            foreach ($products as $product) {
-                $this->remover->remove($product);
-            }
+            $this->remover->removeAll($products);
         } while(count($products) > 0);
     }
 }

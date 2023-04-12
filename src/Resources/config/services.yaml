@@ -25,7 +25,7 @@ services:
   Gracious\AkeneoExtras\Command\PimMassDeleteProductModelsCommand:
     arguments:
       - '@pim_catalog.repository.product_model'
-      - '@Akeneo\Pim\Enrichment\Component\Product\Command\ProductModel\RemoveProductModelHandler'
+      - '@pim_catalog.remover.product_model'
       - '@akeneo_elasticsearch.client.product_and_product_model'
       - '@validator'
     tags:
