@@ -16,7 +16,12 @@
     }
   },
   "require": {
-    "php": "^8.0",
-    "akeneo/pim-community-dev": "^6.0.0"
+    "php": "^8.1",
+    "akeneo/pim-community-dev": "^7.0.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "symfony/flex": false
+    }
   }
 }

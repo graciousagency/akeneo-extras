@@ -1,8 +1,6 @@
 <?php
 namespace Gracious\AkeneoExtras\Command;
 
-use Akeneo\Pim\Enrichment\Component\Product\Command\ProductModel\RemoveProductModelCommand;
-use Akeneo\Pim\Enrichment\Component\Product\Model\ProductModelInterface;
 use Akeneo\Pim\Enrichment\Component\Product\Repository\ProductModelRepositoryInterface;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\Client;
 use Akeneo\Tool\Component\StorageUtils\Remover\BulkRemoverInterface;
@@ -13,7 +11,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[AsCommand(
     name: 'pim:mass-delete:product-models',
@@ -25,7 +22,6 @@ class PimMassDeleteProductModelsCommand extends Command
         private ProductModelRepositoryInterface $repository,
         private BulkRemoverInterface       $remover,
         private Client                          $productAndProductModelClient,
-        private ValidatorInterface              $validator,
                                                 $name = null
     ) {
         parent::__construct($name);
