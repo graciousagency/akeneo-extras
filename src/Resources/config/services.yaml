@@ -48,3 +48,16 @@ services:
   Gracious\AkeneoExtras\Command\PimMassDeleteSystemFlushCommand:
     tags:
       - { name: 'console.command' }
+
+  Gracious\AkeneoExtras\Command\AkeneoFileStoragePruneCatalogCommand:
+    arguments:
+      $mediaAttributeRepository: '@pim_catalog.repository.attribute'
+      $productQueryBuilderFactory: '@pim_catalog.query.product_query_builder_factory'
+      $productModelQueryBuilderFactory: '@pim_catalog.query.product_model_query_builder_factory'
+      $entityManager: '@doctrine.orm.entity_manager'
+      $filesystemProvider: '@akeneo_file_storage.file_storage.filesystem_provider'
+      $fileInfoRepository: '@akeneo_file_storage.repository.file_info'
+      $fileRemover: '@akeneo_file_storage.remover.file'
+      $filesystemAlias: 'catalogStorage'
+    tags:
+      - { name: 'console.command' }
