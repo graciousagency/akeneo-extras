@@ -51,7 +51,7 @@ services:
   Gracious\AkeneoExtras\Command\AkeneoFileStoragePruneCatalogCommand:
     arguments:
       $mediaAttributeRepository: '@pim_catalog.repository.attribute'
-      $productQueryBuilderFactory: '@pim_catalog.query.product_query_builder_factory'
+      $productQueryBuilderFactory: '@pim_catalog.query.product_query_builder_factory_for_reading_purpose'
       $productModelQueryBuilderFactory: '@pim_catalog.query.product_model_query_builder_factory'
       $entityManager: '@doctrine.orm.entity_manager'
       $filesystemProvider: '@akeneo_file_storage.file_storage.filesystem_provider'
