@@ -75,7 +75,36 @@ class AkeneoFileStoragePruneCatalogCommand extends Command
         $pqb = $this->productQueryBuilderFactory->create([]);
         $usedProductFiles = $this->findUsedImages($pqb, $mediaAttributes);
 
-        return $usedModelFiles + $usedProductFiles;
+        return $usedModelFiles + $usedProductFiles + $this->findReferencedFiles();
+    }
+
+    /**
+     * Files referenced by a foreign key from any other table (user avatars, for example).
+     *
+     * @return array<int, bool>
+     */
+    protected function findReferencedFiles(): array
+    {
+        $connection = $this->entityManager->getConnection();
+        $references = $connection->fetchAllAssociative(
+            'SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME = :table AND REFERENCED_COLUMN_NAME = :column',
+            ['table' => $this->entityManager->getClassMetadata($this->fileInfoRepository->getClassName())->getTableName(), 'column' => 'id']
+        );
+
+        $usedFiles = [];
+        foreach ($references as $reference) {
+            $ids = $connection->fetchFirstColumn(sprintf(
+                'SELECT DISTINCT %1$s FROM %2$s WHERE %1$s IS NOT NULL',
+                $connection->quoteIdentifier($reference['COLUMN_NAME']),
+                $connection->quoteIdentifier($reference['TABLE_NAME'])
+            ));
+            foreach ($ids as $id) {
+                $usedFiles[(int) $id] = true;
+            }
+        }
+
+        return $usedFiles;
     }
 
     /**
@@ -87,14 +116,16 @@ class AkeneoFileStoragePruneCatalogCommand extends Command
     {
         $productsCursor = $pqb->execute();
         $usedFiles = [];
+        $mediaAttributes = array_flip($mediaAttributes);
         /** @var ProductModelInterface|ProductInterface $product */
         foreach ($productsCursor as $product) {
-            foreach ($mediaAttributes as $attribute) {
-                // TODO: handle all possible channels and locales
-                $val = $product->getValue($attribute);
-                $data = $val?->getData();
+            // every value, so localizable and scopable media count for all channels and locales
+            foreach ($product->getValues() as $val) {
+                if (!isset($mediaAttributes[$val->getAttributeCode()])) {
+                    continue;
+                }
+                $data = $val->getData();
                 if ($data instanceof FileInfoInterface && !$data->isRemoved() && !isset($usedFiles[$data->getId()])) {
-                    /** @var FileInfoInterface $data */
                     $usedFiles[$data->getId()] = true;
                 }
             }
@@ -138,13 +169,15 @@ class AkeneoFileStoragePruneCatalogCommand extends Command
 
             foreach ($fileInfos as $fileInfo) {
                 if (!isset($usedFiles[$fileInfo->getId()])) {
+                    // Database row first: if it fails, the file stays and the run stops (the EntityManager is closed by then).
+                    $key = $fileInfo->getKey();
+                    $this->fileRemover->remove($fileInfo);
                     try {
-                        $fs->delete($fileInfo->getKey());
-                        $this->fileRemover->remove($fileInfo);
-                        $amountDeleted++;
+                        $fs->delete($key);
                     } catch (\Throwable $e) {
-                        $io->error("Could not remove file '{$fileInfo->getKey()}' due to reason: {$e->getMessage()}");
+                        $io->warning("Removed file info, but could not delete file '$key': {$e->getMessage()}");
                     }
+                    $amountDeleted++;
                 }
                 $this->entityManager->detach($fileInfo);
                 $lastId = $fileInfo->getId();
