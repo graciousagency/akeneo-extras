@@ -46,6 +46,7 @@ class PimMassDeleteAttributesCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
             'Are you sure you want to delete all attributes? (y/n) ',

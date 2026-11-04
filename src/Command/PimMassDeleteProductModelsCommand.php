@@ -31,6 +31,7 @@ class PimMassDeleteProductModelsCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
             'Are you sure you want to delete all product models? (y/n) ',
@@ -60,12 +61,8 @@ class PimMassDeleteProductModelsCommand extends Command
 
     private function removeProductModels(): void
     {
-        do {
-            $productModels = $this->repository->findBy([], ['id' => 'ASC'], 1000);
-            if (count($productModels) === 0) {
-                break;
-            }
+        while ($productModels = $this->repository->findBy([], ['id' => 'ASC'], 1000)) {
             $this->remover->removeAll($productModels);
-        } while(count($productModels) > 0);
+        }
     }
 }
